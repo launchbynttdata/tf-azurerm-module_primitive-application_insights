@@ -1,4 +1,4 @@
-module github.com/nexient-llc/tf-azurerm-module_primitive-application_insights
+module github.com/launchbynttdata/tf-azurerm-module_primitive-application_insights
 
 go 1.21
 
@@ -7,7 +7,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/applicationinsights/armapplicationinsights v1.2.0
 	github.com/gruntwork-io/terratest v0.43.12
-	github.com/nexient-llc/lcaf-component-terratest-common v1.0.3
+	github.com/launchbynttdata/lcaf-component-terratest v1.0.3
 	github.com/stretchr/testify v1.8.4
 )
 
