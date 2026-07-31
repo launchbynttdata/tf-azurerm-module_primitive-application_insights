@@ -41,7 +41,7 @@ variable "environment_number" {
 }
 
 variable "region" {
-  description = "AWS Region in which the infra needs to be provisioned"
+  description = "Azure region in which the infrastructure is provisioned."
   type        = string
   default     = "eastus"
 }
