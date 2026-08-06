@@ -17,13 +17,21 @@ import (
 )
 
 func TestComposableComplete(t *testing.T, ctx types.TestContext) {
+	testApplicationInsightsComplete(t, ctx)
+}
+
+func TestApplicationInsightsComplete(t *testing.T, ctx types.TestContext) {
+	testApplicationInsightsComplete(t, ctx)
+}
+
+func testApplicationInsightsComplete(t *testing.T, ctx types.TestContext) {
 	subscriptionID := os.Getenv("ARM_SUBSCRIPTION_ID")
 	if len(subscriptionID) == 0 {
 		t.Fatal("ARM_SUBSCRIPTION_ID is not set in the environment variables ")
 	}
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		t.Fatalf("Unable to get credentials: %e\n", err)
+		t.Fatalf("Unable to get credentials: %v\n", err)
 	}
 
 	options := arm.ClientOptions{
@@ -34,7 +42,7 @@ func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 
 	clientFactory, err := armapplicationinsights.NewClientFactory(subscriptionID, credential, &options)
 	if err != nil {
-		t.Fatalf("Unable to get clientFactory: %e\n", err)
+		t.Fatalf("Unable to get clientFactory: %v\n", err)
 
 	}
 
@@ -46,7 +54,7 @@ func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 
 	res, err := componentsClient.Get(context.Background(), expectedRgName, expectedAppInsightsName, nil)
 	if err != nil {
-		t.Fatalf("Error occurred while getting resource: %e\n", err)
+		t.Fatalf("Error occurred while getting resource: %v\n", err)
 	}
 
 	t.Run("AppInsightsExists", func(t *testing.T) {

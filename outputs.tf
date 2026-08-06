@@ -11,23 +11,28 @@
 // limitations under the License.
 
 output "id" {
-  value = azurerm_application_insights.app_insights.id
+  description = "The resource ID of the Application Insights component."
+  value       = azurerm_application_insights.app_insights.id
 }
 
 output "name" {
-  value = azurerm_application_insights.app_insights.name
+  description = "The name of the Application Insights component."
+  value       = azurerm_application_insights.app_insights.name
 }
 
 output "app_id" {
-  value = azurerm_application_insights.app_insights.app_id
+  description = "The application ID associated with the Application Insights component."
+  value       = azurerm_application_insights.app_insights.app_id
 }
 
 output "instrumentation_key" {
-  value     = azurerm_application_insights.app_insights.instrumentation_key
-  sensitive = true
+  description = "The instrumentation key of the Application Insights component."
+  value       = azurerm_application_insights.app_insights.instrumentation_key
+  sensitive   = true
 }
 
 output "connection_string" {
-  value     = azurerm_application_insights.app_insights.connection_string
-  sensitive = true
+  description = "The connection string of the Application Insights component."
+  value       = azurerm_application_insights.app_insights.connection_string
+  sensitive   = true
 }

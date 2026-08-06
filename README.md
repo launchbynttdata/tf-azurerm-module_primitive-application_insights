@@ -5,117 +5,69 @@
 
 ## Overview
 
-This terraform module creates an `Application Insights` resource in Azure.
+This Terraform module creates an Azure Application Insights resource.
 
-## Pre-Commit hooks
+## Usage
 
-[.pre-commit-config.yaml](.pre-commit-config.yaml) file defines certain `pre-commit` hooks that are relevant to terraform, golang and common linting tasks. There are no custom hooks added.
+See [examples/complete](examples/complete) for a complete workspace-based Application Insights example.
 
-`commitlint` hook enforces commit message in certain format. The commit contains the following structural elements, to communicate intent to the consumers of your commit messages:
+## Module Development
 
-- **fix**: a commit of the type `fix` patches a bug in your codebase (this correlates with PATCH in Semantic Versioning).
-- **feat**: a commit of the type `feat` introduces a new feature to the codebase (this correlates with MINOR in Semantic Versioning).
-- **BREAKING CHANGE**: a commit that has a footer `BREAKING CHANGE:`, or appends a `!` after the type/scope, introduces a breaking API change (correlating with MAJOR in Semantic Versioning). A BREAKING CHANGE can be part of commits of any type.
-footers other than BREAKING CHANGE: <description> may be provided and follow a convention similar to git trailer format.
-- **build**: a commit of the type `build` adds changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
-- **chore**: a commit of the type `chore` adds changes that don't modify src or test files
-- **ci**: a commit of the type `ci` adds changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
-- **docs**: a commit of the type `docs` adds documentation only changes
-- **perf**: a commit of the type `perf` adds code change that improves performance
-- **refactor**: a commit of the type `refactor` adds code change that neither fixes a bug nor adds a feature
-- **revert**: a commit of the type `revert` reverts a previous commit
-- **style**: a commit of the type `style` adds code changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-- **test**: a commit of the type `test` adds missing tests or correcting existing tests
+### Pre-Requisites
 
-Base configuration used for this project is [commitlint-config-conventional (based on the Angular convention)](https://github.com/conventional-changelog/commitlint/tree/master/@commitlint/config-conventional#type-enum)
+The following commands should be available on your system:
 
-If you are a developer using vscode, [this](https://marketplace.visualstudio.com/items?itemName=joshbolduc.commitlint) plugin may be helpful.
+- `asdf` or `mise`
+- `make`
+- `python3` (for pre-commit)
+- Azure CLI
 
-`detect-secrets-hook` prevents new secrets from being introduced into the baseline. TODO: INSERT DOC LINK ABOUT HOOKS
+Additionally, configure your Git user and email. Run `make configure` from the repository root to install and verify the required tooling.
 
-In order for `pre-commit` hooks to work properly
+### Pre-Commit hooks
 
-- You need to have the pre-commit package manager installed. [Here](https://pre-commit.com/#install) are the installation instructions.
-- `pre-commit` would install all the hooks when commit message is added by default except for `commitlint` hook. `commitlint` hook would need to be installed manually using the command below
+[.pre-commit-config.yaml](.pre-commit-config.yaml) defines hooks for Terraform formatting, validation, documentation generation, readonly-test wiring, and secret detection. Hooks are installed by `make configure`. Go linting runs through `make lint` locally and in CI.
 
-```
-pre-commit install --hook-type commit-msg
-```
+### Terratest example
 
-## To test the resource group module locally
+Functional and readonly tests explicitly target `examples/complete`. The readonly suite uses the non-destructive test runner.
 
-1. For development/enhancements to this module locally, you'll need to install all of its components. This is controlled by the `configure` target in the project's [`Makefile`](./Makefile). Before you can run `configure`, familiarize yourself with the variables in the `Makefile` and ensure they're pointing to the right places.
+### Local Validation
 
-```
-make configure
+Validate changes locally before pushing them to GitHub:
+
+1. Run `make configure` successfully.
+2. Sign in to the appropriate Azure subscription and ensure the test identity can create and delete the example resources.
+3. Run the Terraform and Go linters:
+
+```shell
+make lint
 ```
 
-This adds in several files and directories that are ignored by `git`. They expose many new Make targets.
+4. Run integration tests, which apply, test, and destroy real Azure resources:
 
-2. _THIS STEP APPLIES ONLY TO MICROSOFT AZURE. IF YOU ARE USING A DIFFERENT PLATFORM PLEASE SKIP THIS STEP._ The first target you care about is `env`. This is the common interface for setting up environment variables. The values of the environment variables will be used to authenticate with cloud provider from local development workstation.
-
-`make configure` command will bring down `azure_env.sh` file on local workstation. Devloper would need to modify this file, replace the environment variable values with relevant values.
-
-These environment variables are used by `terratest` integration suit.
-
-Service principle used for authentication(value of ARM_CLIENT_ID) should have below privileges on resource group within the subscription.
-
-```
-"Microsoft.Resources/subscriptions/resourceGroups/write"
-"Microsoft.Resources/subscriptions/resourceGroups/read"
-"Microsoft.Resources/subscriptions/resourceGroups/delete"
+```shell
+make test
 ```
 
-Then run this make target to set the environment variables on developer workstation.
+Pre-commit validation, `make lint`, and `make test` also run in CI.
 
-```
-make env
-```
+### Review & Merge Process
 
-3. The first target you care about is `check`.
+Open a pull request to the default (`main`) branch. The PR title must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#specification) format to merge and drive semantic versioning.
 
-**Pre-requisites**
-Before running this target it is important to ensure that, developer has created files mentioned below on local workstation under root directory of git repository that contains code for primitives/segments. Note that these files are `azure` specific. If primitive/segment under development uses any other cloud provider than azure, this section may not be relevant.
+Ensure CI workflows pass, address review feedback, and obtain the approvals required by `CODEOWNERS`.
 
-- A file named `provider.tf` with contents below
+### Automatic Updates
 
-```
-provider "azurerm" {
-  features {}
-}
-```
-
-- A file named `terraform.tfvars` which contains key value pair of variables used.
-
-Note that since these files are added in `gitignore` they would not be checked in into primitive/segment's git repo.
-
-After creating these files, for running tests associated with the primitive/segment, run
-
-```
-make check
-```
-
-If `make check` target is successful, developer is good to commit the code to primitive/segment's git repo.
-
-`make check` target
-
-- runs `terraform commands` to `lint`,`validate` and `plan` terraform code.
-- runs `conftests`. `conftests` make sure `policy` checks are successful.
-- runs `terratest`. This is integration test suit.
-- runs `opa` tests
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+Shared configuration and workflow files are largely managed through [launch-terraform-skeleton](https://github.com/launchbynttdata/launch-terraform-skeleton). Avoid one-off edits to copied skeleton files unless necessary. Use `copier check-update` or `copier update` when refreshing from the skeleton.
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~>3.117 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 3.117.1 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.2 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.77, < 5.0 |
 
 ## Modules
 
@@ -131,29 +83,29 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_name"></a> [name](#input\_name) | The name of the resource | `string` | n/a | yes |
-| <a name="input_location"></a> [location](#input\_location) | The location/region where the resource will be created | `string` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group in which the resource will be created | `string` | n/a | yes |
 | <a name="input_application_type"></a> [application\_type](#input\_application\_type) | Specifies the type of the application - web, ios, java etc. | `string` | `"web"` | no |
-| <a name="input_retention_in_days"></a> [retention\_in\_days](#input\_retention\_in\_days) | Specifies the retention period in days. Possible values are 30, 60, 90, 120, 180, 270, 365, 550 or 730.<br>    Defaults to 90 | `number` | `30` | no |
 | <a name="input_daily_data_cap_in_gb"></a> [daily\_data\_cap\_in\_gb](#input\_daily\_data\_cap\_in\_gb) | Specifies the Application Insights component daily data volume cap in GB. | `number` | `null` | no |
 | <a name="input_daily_data_cap_notifications_disabled"></a> [daily\_data\_cap\_notifications\_disabled](#input\_daily\_data\_cap\_notifications\_disabled) | Specifies if a notification email will be send when the daily data volume cap is met. | `bool` | `null` | no |
-| <a name="input_sampling_percentage"></a> [sampling\_percentage](#input\_sampling\_percentage) | Specifies the percentage of the data produced by the application which is sampled for Application Insights.<br>    Defaults to 100 | `number` | `100` | no |
-| <a name="input_disable_ip_masking"></a> [disable\_ip\_masking](#input\_disable\_ip\_masking) | By default the real client IP is masked as 0.0.0.0 in the logs. Use this argument to disable masking and<br>    log the real client IP. Defaults to false | `bool` | `false` | no |
-| <a name="input_workspace_id"></a> [workspace\_id](#input\_workspace\_id) | Specifies the id of a log analytics workspace resource. | `string` | `null` | no |
-| <a name="input_local_authentication_disabled"></a> [local\_authentication\_disabled](#input\_local\_authentication\_disabled) | Disable Non-Azure AD based Auth. Defaults to false. | `bool` | `false` | no |
+| <a name="input_disable_ip_masking"></a> [disable\_ip\_masking](#input\_disable\_ip\_masking) | By default the real client IP is masked as 0.0.0.0 in the logs. Use this argument to disable masking and<br/>    log the real client IP. Defaults to false | `bool` | `false` | no |
+| <a name="input_force_customer_storage_for_profiler"></a> [force\_customer\_storage\_for\_profiler](#input\_force\_customer\_storage\_for\_profiler) | Should the Application Insights component force users to create their own storage account for profiling?<br/>    Defaults to false. | `bool` | `false` | no |
 | <a name="input_internet_ingestion_enabled"></a> [internet\_ingestion\_enabled](#input\_internet\_ingestion\_enabled) | Should the Application Insights component support ingestion over the Public Internet? Defaults to true. | `bool` | `true` | no |
 | <a name="input_internet_query_enabled"></a> [internet\_query\_enabled](#input\_internet\_query\_enabled) | Should the Application Insights component support querying over the Public Internet? Defaults to true. | `bool` | `true` | no |
-| <a name="input_force_customer_storage_for_profiler"></a> [force\_customer\_storage\_for\_profiler](#input\_force\_customer\_storage\_for\_profiler) | Should the Application Insights component force users to create their own storage account for profiling?<br>    Defaults to false. | `bool` | `false` | no |
+| <a name="input_local_authentication_disabled"></a> [local\_authentication\_disabled](#input\_local\_authentication\_disabled) | Disable Non-Azure AD based Auth. Defaults to false. | `bool` | `false` | no |
+| <a name="input_location"></a> [location](#input\_location) | The location/region where the resource will be created | `string` | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | The name of the resource | `string` | n/a | yes |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | The name of the resource group in which the resource will be created | `string` | n/a | yes |
+| <a name="input_retention_in_days"></a> [retention\_in\_days](#input\_retention\_in\_days) | Specifies the retention period in days. Possible values are 30, 60, 90, 120, 180, 270, 365, 550 or 730.<br/>    Defaults to 90 | `number` | `30` | no |
+| <a name="input_sampling_percentage"></a> [sampling\_percentage](#input\_sampling\_percentage) | Specifies the percentage of the data produced by the application which is sampled for Application Insights.<br/>    Defaults to 100 | `number` | `100` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags for the resource | `map(string)` | `{}` | no |
+| <a name="input_workspace_id"></a> [workspace\_id](#input\_workspace\_id) | Specifies the id of a log analytics workspace resource. | `string` | `null` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_id"></a> [id](#output\_id) | n/a |
-| <a name="output_name"></a> [name](#output\_name) | n/a |
-| <a name="output_app_id"></a> [app\_id](#output\_app\_id) | n/a |
-| <a name="output_instrumentation_key"></a> [instrumentation\_key](#output\_instrumentation\_key) | n/a |
-| <a name="output_connection_string"></a> [connection\_string](#output\_connection\_string) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+| <a name="output_app_id"></a> [app\_id](#output\_app\_id) | The application ID associated with the Application Insights component. |
+| <a name="output_connection_string"></a> [connection\_string](#output\_connection\_string) | The connection string of the Application Insights component. |
+| <a name="output_id"></a> [id](#output\_id) | The resource ID of the Application Insights component. |
+| <a name="output_instrumentation_key"></a> [instrumentation\_key](#output\_instrumentation\_key) | The instrumentation key of the Application Insights component. |
+| <a name="output_name"></a> [name](#output\_name) | The name of the Application Insights component. |
+<!-- END_TF_DOCS -->

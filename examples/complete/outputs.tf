@@ -11,21 +11,26 @@
 // limitations under the License.
 
 output "app_insights_id" {
-  value = module.app_insights.id
+  description = "The resource ID of the Application Insights component."
+  value       = module.app_insights.id
 }
 
 output "app_insights_name" {
-  value = module.app_insights.name
+  description = "The name of the Application Insights component."
+  value       = module.app_insights.name
 }
 
 output "log_analytics_id" {
-  value = module.log_analytics_workspace.id
+  description = "The resource ID of the Log Analytics workspace."
+  value       = module.log_analytics_workspace.id
 }
 
 output "resource_group_id" {
-  value = module.resource_group.id
+  description = "The resource ID of the example resource group."
+  value       = module.resource_group.id
 }
 
 output "resource_group_name" {
-  value = module.resource_group.name
+  description = "The name of the example resource group."
+  value       = module.resource_group.name
 }
