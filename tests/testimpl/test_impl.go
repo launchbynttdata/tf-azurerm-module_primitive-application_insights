@@ -48,9 +48,9 @@ func testApplicationInsightsComplete(t *testing.T, ctx types.TestContext) {
 
 	componentsClient := clientFactory.NewComponentsClient()
 
-	expectedRgName := terraform.Output(t, ctx.TerratestTerraformOptions(), "resource_group_name")
-	expectedAppInsightsName := terraform.Output(t, ctx.TerratestTerraformOptions(), "app_insights_name")
-	expectedAppInsightsId := terraform.Output(t, ctx.TerratestTerraformOptions(), "app_insights_id")
+	expectedRgName := terraform.OutputContext(t, context.Background(), ctx.TerratestTerraformOptions(), "resource_group_name")
+	expectedAppInsightsName := terraform.OutputContext(t, context.Background(), ctx.TerratestTerraformOptions(), "app_insights_name")
+	expectedAppInsightsId := terraform.OutputContext(t, context.Background(), ctx.TerratestTerraformOptions(), "app_insights_id")
 
 	res, err := componentsClient.Get(context.Background(), expectedRgName, expectedAppInsightsName, nil)
 	if err != nil {
